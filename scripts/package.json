@@ -1,0 +1,14 @@
+{
+  "name": "lacework-codesec-azure",
+  "version": "0.0.1",
+  "description": "Azure DevOps pipeline integration for Lacework Code Security",
+  "main": "dist/index.js",
+  "scripts": {},
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/node": "^22.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

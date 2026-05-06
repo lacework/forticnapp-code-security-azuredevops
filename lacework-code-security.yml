@@ -1,0 +1,73 @@
+# Lacework Code Security — Reusable Azure DevOps Pipeline Template
+#
+# Usage in your azure-pipelines.yml:
+#
+#   trigger:
+#     - main
+#   pr:
+#     - main
+#
+#   pool:
+#     vmImage: 'ubuntu-latest'
+#
+#   steps:
+#     - checkout: self
+#       fetchDepth: 0
+#     - template: lacework-code-security.yml
+#       parameters:
+#         lwAccount: $(LW_ACCOUNT)
+#         lwApiKey: $(LW_API_KEY)
+#         lwApiSecret: $(LW_API_SECRET)
+
+parameters:
+  - name: lwAccount
+    type: string
+  - name: lwApiKey
+    type: string
+  - name: lwApiSecret
+    type: string
+  - name: runSca
+    type: string
+    default: 'true'
+  - name: runIac
+    type: string
+    default: 'true'
+  - name: debug
+    type: string
+    default: 'false'
+  - name: imageTag
+    type: string
+    default: 'latest'
+
+steps:
+  - script: |
+      docker run \
+        -v $(Build.SourcesDirectory):/app/src \
+        -e WORKSPACE=src \
+        -e LW_ACCOUNT=${{ parameters.lwAccount }} \
+        -e LW_API_KEY=${{ parameters.lwApiKey }} \
+        -e LW_API_SECRET=${{ parameters.lwApiSecret }} \
+        -e RUN_SCA=${{ parameters.runSca }} \
+        -e RUN_IAC=${{ parameters.runIac }} \
+        -e DEBUG=${{ parameters.debug }} \
+        -e TF_BUILD \
+        -e BUILD_REASON \
+        -e BUILD_SOURCEBRANCHNAME \
+        -e BUILD_SOURCEBRANCH \
+        -e BUILD_REPOSITORY_ID \
+        -e BUILD_REPOSITORY_NAME \
+        -e BUILD_BUILDID \
+        -e BUILD_BUILDNUMBER \
+        -e BUILD_DEFINITIONNAME \
+        -e SYSTEM_COLLECTIONURI \
+        -e SYSTEM_TEAMFOUNDATIONCOLLECTIONURI \
+        -e SYSTEM_TEAMPROJECT \
+        -e SYSTEM_DEFINITIONID \
+        -e SYSTEM_PULLREQUEST_SOURCEBRANCH \
+        -e SYSTEM_PULLREQUEST_TARGETBRANCH \
+        -e SYSTEM_PULLREQUEST_PULLREQUESTID \
+        -e SYSTEM_ACCESSTOKEN \
+        lacework/code-security-azure:${{ parameters.imageTag }}
+    displayName: 'FortiCNAPP Code Security Scan'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
