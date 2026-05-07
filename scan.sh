@@ -85,7 +85,9 @@ if [ "${BUILD_REASON:-}" = "PullRequest" ]; then
     PROJECT_NAME="${SYSTEM_TEAMPROJECT:-}"
     REPO_NAME="${BUILD_REPOSITORY_NAME:-}"
     if [ -n "$ORG_NAME" ] && [ -n "$PROJECT_NAME" ] && [ -n "$REPO_NAME" ]; then
-        REPO_PATH=$(echo "azure-devops/${PROJECT_NAME}/${REPO_NAME}" | sed 's|/|%2F|g')
+        # Extract host/org from collection URI (e.g. https://dev.azure.com/myorg/ -> dev.azure.com/myorg)
+        ORG_PATH=$(echo "$ORG_NAME" | sed 's|^https://||; s|/$||')
+        REPO_PATH=$(echo "${ORG_PATH}/${PROJECT_NAME}/_git/${REPO_NAME}" | sed 's|/|%2F|g')
         export LW_UI_LINK="https://${LW_ACCOUNT_SHORT}.lacework.net/ui/investigation/codesec/applications/repositories/${REPO_PATH}/${TARGET_BRANCH}"
         if [ -n "${LW_SUBACCOUNT:-}" ]; then
             export LW_UI_LINK="${LW_UI_LINK}?accountName=${LW_SUBACCOUNT}"
