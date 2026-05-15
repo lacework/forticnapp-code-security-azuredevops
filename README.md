@@ -1,29 +1,29 @@
 # FortiCNAPP Code Security for Azure DevOps Pipelines
 
-Lacework Code Security integration for Azure DevOps. Runs SCA (Software Composition Analysis) and IaC (Infrastructure as Code) scanning on your repositories, posting comparison results as PR comments.
+FortiCNAPP Code Security integration for Azure DevOps. Runs SCA (Software Composition Analysis) and IaC (Infrastructure as Code) scanning on your repositories, posting comparison results as PR comments.
 
 ## Prerequisites
 
-- A Lacework/FortiCNAPP account with API credentials
+- A FortiCNAPP account with API credentials
 - An Azure DevOps project with a Git repository
 
 ## Setup
 
-### 1. Create a Variable Group for Lacework Credentials
+### 1. Create a Variable Group for FortiCNAPP Credentials
 
 1. Go to **Pipelines > Library** in your Azure DevOps project
-2. Click **+ Variable group** and name it `lacework-credentials` (or any name you prefer)
+2. Click **+ Variable group** and name it `forticnapp-credentials` (or any name you prefer)
 3. Add the following variables:
 
 | Variable | Description | Secret? |
 |----------|-------------|---------|
-| `LW_ACCOUNT` | Lacework account name (e.g., `mycompany.lacework.net`) | No |
-| `LW_API_KEY` | Lacework API key | Yes |
-| `LW_API_SECRET` | Lacework API secret | Yes |
+| `LW_ACCOUNT` | FortiCNAPP account name (e.g., `mycompany.lacework.net`) | No |
+| `LW_API_KEY` | FortiCNAPP API key | Yes |
+| `LW_API_SECRET` | FortiCNAPP API secret | Yes |
 
 4. Click **Save**
 
-You can find your API credentials in the Lacework console under **Settings > API Keys**.
+You can find your API credentials in the FortiCNAPP console under **Settings > API Keys**.
 
 ### 2. Add Pipeline YAML to Your Repository
 
@@ -37,7 +37,7 @@ pr:
   - main
 
 variables:
-  - group: lacework-credentials
+  - group: forticnapp-credentials
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -119,14 +119,14 @@ This ensures the scan runs automatically whenever a PR targets that branch.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `LW_SUBACCOUNT` | _(empty)_ | Lacework sub-account for multi-tenant setups |
+| `LW_SUBACCOUNT` | _(empty)_ | FortiCNAPP sub-account for multi-tenant setups |
 
 Add these as additional `-e` flags in the `docker run` command.
 
 ## How It Works
 
 ### Push Scanning
-When code is pushed to a branch, the scanner runs SCA and IaC analysis and uploads results to the Lacework platform.
+When code is pushed to a branch, the scanner runs SCA and IaC analysis and uploads results to the FortiCNAPP platform.
 
 ### Pull Request Scanning
 When a PR is created or updated:
