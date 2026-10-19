@@ -32,7 +32,19 @@ export RUN_IAC="${RUN_IAC:-true}"
 : "${LW_API_KEY:?'LW_API_KEY variable missing.'}"
 : "${LW_API_SECRET:?'LW_API_SECRET variable missing.'}"
 
-export CI_PLATFORM="${CI_PLATFORM:-azuredevops}"
+# Azure Pipelines sets TF_BUILD=True in every job. Without it the scan is not
+# running in a pipeline step, so it has no pipeline to link to and won't
+# appear on the Pipelines page.
+# Accepts the same values the scanner's strconv.ParseBool treats as true.
+case "${TF_BUILD:-}" in
+    1|t|T|true|TRUE|True)
+        export CI_PLATFORM="${CI_PLATFORM:-azuredevops}"
+        ;;
+    *)
+        echo "WARNING: TF_BUILD is not set, so this scan is not running inside an Azure Pipelines job."
+        echo "WARNING: Results will upload, but will not appear on the Pipelines page. See the README."
+        ;;
+esac
 
 # soluble-cli reads SYSTEM_COLLECTIONURI for Azure DevOps detection,
 # but Azure DevOps provides SYSTEM_TEAMFOUNDATIONCOLLECTIONURI
@@ -133,10 +145,13 @@ if [ "${BUILD_REASON:-}" = "PullRequest" ]; then
 
 else
     echo "=== Push scanning ==="
-    BRANCH="${BUILD_SOURCEBRANCHNAME:-unknown}"
-    echo "Scanning branch: $BRANCH"
+    # Left unset when unknown so the scanner reads the branch from git
+    BRANCH="${BUILD_SOURCEBRANCHNAME:-}"
+    echo "Scanning branch: ${BRANCH:-<from git>}"
 
-    export LW_CODESEC_GIT_BRANCH="$BRANCH"
+    if [ -n "$BRANCH" ]; then
+        export LW_CODESEC_GIT_BRANCH="$BRANCH"
+    fi
     export SCAN_TARGET=scan
     SCAN_EXIT_CODE=0
     /app/bin/unified-codesec.sh scan || SCAN_EXIT_CODE=$?
