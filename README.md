@@ -81,6 +81,11 @@ steps:
 **Important notes:**
 - `fetchDepth: 0` is required so the scanner can fetch and check out the target branch during PR comparison scans.
 - Secret variables (`LW_API_KEY`, `LW_API_SECRET`, `SYSTEM_ACCESSTOKEN`) must be explicitly mapped in the `env:` block — Azure DevOps does not automatically pass secrets to scripts.
+- Run `docker run` from a `script` step of the pipeline, as shown above. Flags such as `-e TF_BUILD` and `-e BUILD_BUILDID` copy the value from the shell that runs `docker`. Outside a pipeline step, or under `sudo`, those variables are not set and nothing is passed to the container.
+
+### Running the scan outside a pipeline
+
+You can run the same `docker run` from a workstation or server against a local clone. The results upload and show up under the repository's findings, but not on the **Pipelines** page, because the scan has no pipeline to link to. The scanner prints `WARNING: TF_BUILD is not set` when this happens.
 
 ### 3. Create the Pipeline in Azure DevOps
 
@@ -145,6 +150,7 @@ The PR comment thread is updated in-place on subsequent pushes — no duplicate 
 | PR scan doesn't trigger automatically | YAML PR triggers not active or branch policy missing | Set up Build Validation as described in step 5 |
 | `fatal: could not read Password` errors in scan logs | Scanner tries `git remote show origin` inside the container — this is expected and non-fatal | No action needed; the scanner continues successfully |
 | `ERROR unknown command "sca" for "lacework"` | Container running with wrong HOME directory | Ensure you're using `lacework/code-security-azure:latest` (not the base `lacework/codesec` image directly) |
+| Scans upload but don't appear on the Pipelines page; log shows `WARNING: TF_BUILD is not set` | `docker run` ran outside an Azure Pipelines step, or under `sudo`, so the pipeline variables never reached the container | Run it from a `script` step as shown in step 2, without `sudo` |
 | Scan exits with code 160 | Violations found that exceed the severity threshold | This is expected behavior — the scan completed successfully and found issues |
 
 ## License
